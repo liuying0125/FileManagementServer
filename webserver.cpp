@@ -408,7 +408,7 @@ void WebServer::eventLoop()
             // 等待所监控文件描述符上有事件的产生 + 
             // 主线程调用epoll_wait等待一组文件描述符上的事件，并将当前所有就绪的epoll_event复制到events数组中 +
             //epoll返回就绪的文件描述符个数 +
-            int number = epoll_wait(m_epollfd,  , MAX_EVENT_NUMBER, -1);
+            int number = epoll_wait(m_epollfd, events, MAX_EVENT_NUMBER, -1);
             if (number < 0 && errno != EINTR)
             {
                     LOG_ERROR("%s", "epoll failure");
