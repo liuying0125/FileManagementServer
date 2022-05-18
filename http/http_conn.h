@@ -98,7 +98,7 @@ public:
         bool read_once();
         
         //响应报文写入函数  + 
-        bool write();
+        bool writetocom();
         sockaddr_in *get_address(){
                 return &m_address;
         }
@@ -121,7 +121,7 @@ private:
         HTTP_CODE parse_content(char *text);
         HTTP_CODE do_request();
 
-        void makeNewDownloadHTML(string,vector<string>&);
+        void makeNewDownloadHTML(string);
 
 
         //m_start_line是已经解析的字符 +

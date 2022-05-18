@@ -381,7 +381,7 @@ void WebServer::dealwithwrite(int sockfd)
         else
         {      
             std::cout << "dealwithwrite中的proactor"<<std::endl;
-            if (users[sockfd].write())
+            if (users[sockfd].writetocom())
             {
                 LOG_INFO("send data to the client(%s)", inet_ntoa(users[sockfd].get_address()->sin_addr));
 

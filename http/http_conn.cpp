@@ -579,7 +579,7 @@ http_conn::HTTP_CODE http_conn::do_request()
     else if (*(p + 1) == '8')
     {
         // 写一个 读取 Downloadroot文件夹下的文件的 新的 dowmload.html
-
+        makeNewDownloadHTML("./root/Downloadroot");
 
         char *m_url_real = (char *)malloc(sizeof(char) * 200);
         strcpy(m_url_real, "/download.html");
@@ -618,9 +618,15 @@ http_conn::HTTP_CODE http_conn::do_request()
         return FILE_REQUEST;
 }
 
-void http_conn::makeNewDownloadHTML(string strDir, vector<string>& vFileFullPath){
-    string Dir = strDir + "/Downloadroot";
+void http_conn::makeNewDownloadHTML(string strDir){
+    //string Dir =  "./Downloadroot";
     vector<string> vFileFullPath;
+    std::cout << "进入处理HTML函数  strDir = " << strDir << std::endl;
+    int fd = -1;
+    int ret = -1;
+   // char writeBuf[10] = "#####";
+    vector<string> s1;
+
     struct dirent* pDirent;
     DIR* pDir = opendir(strDir.c_str());
     if (pDir != NULL)
@@ -632,7 +638,51 @@ void http_conn::makeNewDownloadHTML(string strDir, vector<string>& vFileFullPath
                     vFileFullPath.push_back(strFileFullPath);
             }
             vFileFullPath.erase(vFileFullPath.begin(), vFileFullPath.begin() +  2);    //前两个存储的是当前路径和上一级路径，所以要删除
+    }else
+        std::cout << "strDir文件不存在" << std::endl;
+
+    for(auto c : vFileFullPath){
+        std::cout << c << std::endl;
     }
+    std::cout << "处理HTML函数 over   "   << std::endl;
+
+    struct stat info; 
+    stat("./root/download.html", &info); 
+    int size = info.st_size; 
+    std::cout << size << std::endl; 
+
+    fd = open("./root/download.html",O_RDWR,0666);
+    if(fd == -1)
+    {
+        //printf("创建文件失败\n");
+        perror("打开文件失败");
+        _exit(-1);
+    }
+
+    ret = lseek(fd,size,SEEK_SET);
+    for(int i = 0 ; i < vFileFullPath.size(); i++){
+        char br[] = "\<br\/\> \<a\ href\=\"";
+        char br1[] = "\"\ download\=\"";
+        char br2[] = "\"\>";
+        char br3[] = "\<\/a\>\n";
+
+        char *p=(char*)vFileFullPath[i].c_str();
+        write(fd, br, strlen(br));
+        write(fd, p, strlen(p));
+        write(fd, br1, strlen(br1));
+        write(fd, p, strlen(p));
+        write(fd, br2, strlen(br2));
+        write(fd, p, strlen(p));
+        write(fd, br3, strlen(br3));
+
+    }
+    char br4[] = "\<\/html\>\n";
+    write(fd, br4, strlen(br4));
+    // int n = write(fd,writeBuf,strlen(writeBuf));
+    // printf("写入了%d个字节\n",n);
+    // printf("偏移了%d个字节\n",ret);
+
+    close(fd);
 
 }
 
@@ -647,7 +697,7 @@ void http_conn::unmap()
 }
 
 //将响应报文发送给浏览器端口 +
-bool http_conn::write()
+bool http_conn::writetocom()
 {
     std::cout << "将响应报文发送给浏览器端口" << std::endl;
     int temp = 0;

@@ -173,7 +173,7 @@ void threadpool<T>::run()
             }
             else
             {   // IO事件类型 1为写
-                if (request->write())
+                if (request->writetocom())
                 {
                     request->improv = 1;
                 }
