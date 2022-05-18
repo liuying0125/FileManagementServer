@@ -1,36 +1,23 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>下载界面</title>
+    </head>
+    <body><br/>
 <div id="file">
     <span>文件列表</span>
 </div>
-</body>
 
-<a href = "../DownLoadDir/1.txt">1.txt</a>
+<br/>
+<div align="center"><font size="5"> <strong>下载</strong></font></div>
+<br/>
+<!--<div  align="center">a w s l</div>-->
+ 
+<br/> 
+<a href="./Downloadroot/download1.txt" download="download1.txt">download1.txt</a>
+<!-- <a href="./Downloadroot/download1.txt">download1.txt</a> --> <!-- 点击之后只在网站显示--> 
 
-<!-- <script>
-
-    let fileData = [];//放你的文件列表数据（包括下载地址和名称）
-
-
-    const file = document.getElementById("file");
-    for (let item of fileData){
-        file.innerHTML += `<a onclick=download(item.value)>${item.value}</a>`;
-    }
-    download=(url)=>{
-        const iframe = document.createElement('iframe');
-        iframe.style.display = 'none';
-        iframe.src = url;
-        document.body.appendChild(iframe);
-        setTimeout(() => {
-            document.body.removeChild(iframe);
-        }, 200);
-    }
-</script> -->
+<!-- 
+<a href="../DownLoadDir/1.txt"​>文件下载</a> -->
 </html>
-
-

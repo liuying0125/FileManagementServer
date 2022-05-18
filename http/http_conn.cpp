@@ -264,13 +264,16 @@ http_conn::HTTP_CODE http_conn::parse_request_line(char *text)
         //在HTTP报文中，请求行用来说明请求类型,要访问的资源以及所使用的HTTP版本，其中各个部分之间通过\t或空格分隔。
         //请求行中最先含有空格和\t任一字符的位置并返回
 
-        m_url = strpbrk(text, " \t");  //在源字符串（s1）中找出最先含有搜索字符串（s2）中任一字符的位置并返回
+        m_url = strpbrk(text, " \t");  //在源字符串（s1）中找出最先含有搜索字符串（s2）中任一字符的位置并返回  
+        std::cout << "text :" << text << endl;
+        // text 是以 \t\n 结尾的
         if (!m_url)
         {
                 return BAD_REQUEST;
         }
         *m_url++ = '\0';
         char *method = text;
+        std::cout << "method  =  " << method << std::endl;
         if (strcasecmp(method, "GET") == 0)
                 m_method = GET;
         else if (strcasecmp(method, "POST") == 0)
@@ -304,7 +307,7 @@ http_conn::HTTP_CODE http_conn::parse_request_line(char *text)
         if (!m_url || m_url[0] != '/')
                 return BAD_REQUEST;
         //当url为/时，显示判断界面
-        if (strlen(m_url) == 1)
+        if (strlen(m_url) == 1)  //  Request URL: http://43.138.12.215:9006/1
                 strcat(m_url, "judge.html");
         m_check_state = CHECK_STATE_HEADER;
         return NO_REQUEST;
@@ -455,6 +458,7 @@ http_conn::HTTP_CODE http_conn::do_request()
 {
     //将初始化的m_real_file赋值为网站根目录 +
     strcpy(m_real_file, doc_root);    //  m_real_file = :/home/ubuntu/TinyWebServer-master/root
+    char* downloadDir = m_real_file + '/../DownLoadDir';
     int len = strlen(doc_root);
     printf("do_request起始的m_url:%s\n", m_url);
 
@@ -573,6 +577,7 @@ http_conn::HTTP_CODE http_conn::do_request()
     //----------添加代码----
     else if (*(p + 1) == '8')
     {
+        // 写一个 读取 Downloadroot文件夹下的文件的 新的 dowmload.html
         char *m_url_real = (char *)malloc(sizeof(char) * 200);
         strcpy(m_url_real, "/download.html");
         strncpy(m_real_file + len, m_url_real, strlen(m_url_real));
@@ -584,7 +589,7 @@ http_conn::HTTP_CODE http_conn::do_request()
         //std::cout << "strncpy()函数之前m_real_file = :" << m_real_file << endl;   ???? 
         //strncpy()函数之前m_real_file = :/home/ubuntu/TinyWebServer-master/root   len = 38
         //std::cout << "len = " << len << std::endl; ???? 加上没有办法显示judge界面
-        strncpy(m_real_file + len, m_url, FILENAME_LEN - len - 1);  // m_url 复制到 m_real_file + len
+        strncpy(m_real_file + len, m_url, FILENAME_LEN - len - 1);  // m_url 复制到 m_real_file + len  
         printf("m_url:%s\n", m_url);
         //通过stat获取请求资源文件信息，成功则将信息更新到 m_file_stat 结构体 +
         //失败返回NO_RESOURCE状态，表示资源不存在 +
