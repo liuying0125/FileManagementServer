@@ -458,10 +458,11 @@ http_conn::HTTP_CODE http_conn::do_request()
 {
     //将初始化的m_real_file赋值为网站根目录 +
     strcpy(m_real_file, doc_root);    //  m_real_file = :/home/ubuntu/TinyWebServer-master/root
-    char* downloadDir = m_real_file + '/../DownLoadDir';
+    char* downloadDir = m_real_file + '/DownLoadDir';
     int len = strlen(doc_root);
     printf("do_request起始的m_url:%s\n", m_url);
 
+    
     //找到m_url中/的位置 + 
     const char *p = strrchr(m_url, '/');  //strrchr  在参数 str 所指向的字符串中搜索最后一次出现字符 c（一个无符号字符）的位置。
 
@@ -578,6 +579,8 @@ http_conn::HTTP_CODE http_conn::do_request()
     else if (*(p + 1) == '8')
     {
         // 写一个 读取 Downloadroot文件夹下的文件的 新的 dowmload.html
+
+
         char *m_url_real = (char *)malloc(sizeof(char) * 200);
         strcpy(m_url_real, "/download.html");
         strncpy(m_real_file + len, m_url_real, strlen(m_url_real));
@@ -614,6 +617,25 @@ http_conn::HTTP_CODE http_conn::do_request()
         close(fd);
         return FILE_REQUEST;
 }
+
+void http_conn::makeNewDownloadHTML(string strDir, vector<string>& vFileFullPath){
+    string Dir = strDir + "/Downloadroot";
+    vector<string> vFileFullPath;
+    struct dirent* pDirent;
+    DIR* pDir = opendir(strDir.c_str());
+    if (pDir != NULL)
+    {
+            while ((pDirent = readdir(pDir)) != NULL)
+            {
+                    string strFileName = pDirent->d_name;
+                    string strFileFullPath = strDir + "/" + strFileName;
+                    vFileFullPath.push_back(strFileFullPath);
+            }
+            vFileFullPath.erase(vFileFullPath.begin(), vFileFullPath.begin() +  2);    //前两个存储的是当前路径和上一级路径，所以要删除
+    }
+
+}
+
 
 void http_conn::unmap()
 {

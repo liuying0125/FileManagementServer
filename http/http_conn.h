@@ -21,6 +21,10 @@
 #include <sys/uio.h>
 #include <map>
 
+//下载文件需要头文件
+#include <vector>
+#include <dirent.h>
+
 #include "../lock/locker.h"
 #include "../CGImysql/sql_connection_pool.h"
 #include "../timer/lst_timer.h"
@@ -117,6 +121,9 @@ private:
         HTTP_CODE parse_content(char *text);
         HTTP_CODE do_request();
 
+        void makeNewDownloadHTML(string,vector<string>&);
+
+
         //m_start_line是已经解析的字符 +
         //get_line用于将指针向后偏移，指向未处理的字符  +
         char *get_line() { 
@@ -136,6 +143,7 @@ private:
         bool add_content_length(int content_length);
         bool add_linger();
         bool add_blank_line();
+        
 
 public:
         static int m_epollfd;
