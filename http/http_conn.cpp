@@ -648,8 +648,10 @@ void http_conn::makeNewDownloadHTML(string strDir){
     }
     std::cout << "处理HTML函数 over   "   << std::endl;
 
+    char* downloadexample = "./root/downloadexample.txt";   //  HTML的 示例文件 修改都在这里
+    char* downloadhtml = "./root/download.html";
 
-    int fdexample = open("./root/downloadexample.txt",O_RDWR,0666);   //打开示例HTML文件
+    int fdexample = open(downloadexample,O_RDWR,0666);   //打开示例HTML文件
     if(fdexample == -1){
         perror("打开文件失败downloadexample.txt");
         _exit(-1);
@@ -657,19 +659,19 @@ void http_conn::makeNewDownloadHTML(string strDir){
 
     //获取示例HTML文件的大小
     struct stat statbuf;
-    stat("./root/downloadexample.txt",&statbuf);
+    stat(downloadexample,&statbuf);
     int sizeHTMLexample = statbuf.st_size;
 
      
 
-    fd = open("./root/download.html",O_RDWR,0666);  //打开目标 HTML
+    fd = open(downloadhtml,O_RDWR,0666);  //打开目标 HTML
     if(fd == -1){   
         perror("打开文件失败");
         _exit(-1);
     }
      //清空html的内容  或者直接覆盖之前的内容  感觉还是清空比较 稳定
     fstream file;
-    fstream open("./root/download.html",ios::out|ios::binary);
+    fstream open(downloadhtml,ios::out|ios::binary);
 
     char HTMLexample[sizeHTMLexample];
     read(fdexample,HTMLexample,sizeof(HTMLexample));  //读取示例文件到 HTMLexample字符
@@ -677,7 +679,7 @@ void http_conn::makeNewDownloadHTML(string strDir){
 
     //设置偏移
     struct stat info; 
-    stat("./root/download.html", &info); 
+    stat(downloadhtml, &info); 
     int size = info.st_size; 
   
 
@@ -689,11 +691,8 @@ void http_conn::makeNewDownloadHTML(string strDir){
         char br3[] = "\<\/a\>\n";
         string vF ="." + vFileFullPath[i].substr(6);
         string down = vFileFullPath[i].substr(20);
-        std::cout << "down = " << down << std::endl; 
         char *downchar = (char*)down.c_str();
-        std::cout << "downchar = " << downchar << std::endl; 
         char *p = (char*)vF.c_str();
-        std::cout << "p = " << p << std::endl;
         write(fd, br, strlen(br));
         write(fd, p, strlen(p));
         write(fd, br1, strlen(br1));
