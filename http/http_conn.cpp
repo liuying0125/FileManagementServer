@@ -164,11 +164,11 @@ void http_conn::init()
 // 从状态机读取一行，分析是请求报文的哪一部分  +
 http_conn::LINE_STATUS http_conn::parse_line()
 {
-        std::cout << "parse_line()" << std::endl;
+       // std::cout << "parse_line()" << std::endl;
       
         char temp;
-        std::cout << "m_checked_idx = :" << m_checked_idx << std::endl;
-        std::cout << "m_read_idx = :" << m_read_idx << std::endl;
+     //   std::cout << "m_checked_idx = :" << m_checked_idx << std::endl;
+      //  std::cout << "m_read_idx = :" << m_read_idx << std::endl;
 
         for (; m_checked_idx < m_read_idx; ++m_checked_idx)
         {        //  temp为将要分析的字节
@@ -618,6 +618,8 @@ http_conn::HTTP_CODE http_conn::do_request()
         return FILE_REQUEST;
 }
 
+
+//处理 download HTML 文件
 void http_conn::makeNewDownloadHTML(string strDir){
     //string Dir =  "./Downloadroot";
     vector<string> vFileFullPath;
@@ -646,18 +648,38 @@ void http_conn::makeNewDownloadHTML(string strDir){
     }
     std::cout << "处理HTML函数 over   "   << std::endl;
 
-    struct stat info; 
-    stat("./root/download.html", &info); 
-    int size = info.st_size; 
-    std::cout << size << std::endl; 
 
-    fd = open("./root/download.html",O_RDWR,0666);
-    if(fd == -1)
-    {
-        //printf("创建文件失败\n");
+    int fdexample = open("./root/downloadexample.txt",O_RDWR,0666);   //打开示例HTML文件
+    if(fdexample == -1){
+        perror("打开文件失败downloadexample.txt");
+        _exit(-1);
+    }
+
+    //获取示例HTML文件的大小
+    struct stat statbuf;
+    stat("./root/downloadexample.txt",&statbuf);
+    int sizeHTMLexample = statbuf.st_size;
+
+     
+
+    fd = open("./root/download.html",O_RDWR,0666);  //打开目标 HTML
+    if(fd == -1){   
         perror("打开文件失败");
         _exit(-1);
     }
+     //清空html的内容  或者直接覆盖之前的内容  感觉还是清空比较 稳定
+    fstream file;
+    fstream open("./root/download.html",ios::out|ios::binary);
+
+    char HTMLexample[sizeHTMLexample];
+    read(fdexample,HTMLexample,sizeof(HTMLexample));  //读取示例文件到 HTMLexample字符
+    write(fd,HTMLexample,sizeof(HTMLexample));   //写入示例文件
+
+    //设置偏移
+    struct stat info; 
+    stat("./root/download.html", &info); 
+    int size = info.st_size; 
+  
 
     ret = lseek(fd,size,SEEK_SET);
     for(int i = 0 ; i < vFileFullPath.size(); i++){
@@ -665,14 +687,19 @@ void http_conn::makeNewDownloadHTML(string strDir){
         char br1[] = "\"\ download\=\"";
         char br2[] = "\"\>";
         char br3[] = "\<\/a\>\n";
-
-        char *p=(char*)vFileFullPath[i].c_str();
+        string vF ="." + vFileFullPath[i].substr(6);
+        string down = vFileFullPath[i].substr(20);
+        std::cout << "down = " << down << std::endl; 
+        char *downchar = (char*)down.c_str();
+        std::cout << "downchar = " << downchar << std::endl; 
+        char *p = (char*)vF.c_str();
+        std::cout << "p = " << p << std::endl;
         write(fd, br, strlen(br));
         write(fd, p, strlen(p));
         write(fd, br1, strlen(br1));
-        write(fd, p, strlen(p));
+        write(fd, downchar, strlen(downchar));
         write(fd, br2, strlen(br2));
-        write(fd, p, strlen(p));
+        write(fd, downchar, strlen(downchar));
         write(fd, br3, strlen(br3));
 
     }
