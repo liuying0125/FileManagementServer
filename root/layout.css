@@ -1,0 +1,15 @@
+backgroundhtml{
+    height: 100%;
+}
+
+body{
+    color: #FFFFFF;
+}
+
+div{
+    display : flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    font-family: 'Roboto Mono', monospace;
+}

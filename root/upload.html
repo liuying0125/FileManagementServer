@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>上传</title>
+        <link href="./layout.css" >
+    </head>
+    
+    <body><br/>
+
+        <!-- <div align="center"><font size="5"> <strong>下载</strong></font></div> -->
+        <div>
+            <input type="file" id="file-uploader">
+            <input type="submit" onclick="upload()">
+            <div id = "image-grid"></div>
+
+        </div> 
+        <script src="./upload.js"></script>
+        <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+        <script>
+            function upload() {
+                const file1 = document.getElementById("file-uploader").files[0];
+                //var file2 = new Blob([file1],{type : 'image/jpg'})//
+                
+                const fileName = file1.name
+                $.ajax({
+                    contentType:false,
+                    processData: false,
+                    type: "POST",
+                    url: "/upload",
+                    data : {
+                        
+                        fileName : file1.name,
+                        file : file1
+                    },
+                    contentType:"application/x-www-form-urlencoded; charset=UTF-8",
+                    dataType:"json",
+                    success: function(data) {
+                         
+                            alert("success") 
+                       
+                    }
+
+                });
+            }
+        </script>
+    </body>
+</html>

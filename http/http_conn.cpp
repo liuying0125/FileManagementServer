@@ -374,9 +374,10 @@ http_conn::HTTP_CODE http_conn::parse_content(char *text)
         if (m_read_idx >= (m_content_length + m_checked_idx))
         {
             text[m_content_length] = '\0';
+            
             //POST请求中最后为输入的用户名和密码
             m_string = text;
-            //cout << "m_string = " << m_string << endl;  // +
+            cout << "m_string = " << m_string << endl;  // +
             return GET_REQUEST;
         }
         return NO_REQUEST;
@@ -530,6 +531,11 @@ http_conn::HTTP_CODE http_conn::do_request()
         }
     }
 
+
+    if (*(p + 1) == 'u'){
+        std::cout << "上传" << std::endl;
+    }
+
     //如果请求资源为/0，表示跳转注册界面 +
     if (*(p + 1) == '0')
     {
@@ -575,7 +581,7 @@ http_conn::HTTP_CODE http_conn::do_request()
 
         free(m_url_real);
     }
-    //----------添加代码----
+    //下载功能-
     else if (*(p + 1) == '8')
     {
         // 写一个 读取 Downloadroot文件夹下的文件的 新的 dowmload.html
@@ -587,17 +593,29 @@ http_conn::HTTP_CODE http_conn::do_request()
 
         free(m_url_real);
     }
+    //上传功能-
+     else if (*(p + 1) == '9')
+    { 
+        char *m_url_real = (char *)malloc(sizeof(char) * 200);
+        strcpy(m_url_real, "/upload2.html");
+        strncpy(m_real_file + len, m_url_real, strlen(m_url_real));
+
+        free(m_url_real);
+    }
     //----------添加代码----
     else 
         //std::cout << "strncpy()函数之前m_real_file = :" << m_real_file << endl;   ???? 
         //strncpy()函数之前m_real_file = :/home/ubuntu/TinyWebServer-master/root   len = 38
         //std::cout << "len = " << len << std::endl; ???? 加上没有办法显示judge界面
         strncpy(m_real_file + len, m_url, FILENAME_LEN - len - 1);  // m_url 复制到 m_real_file + len  
+      
         printf("m_url:%s\n", m_url);
         //通过stat获取请求资源文件信息，成功则将信息更新到 m_file_stat 结构体 +
         //失败返回NO_RESOURCE状态，表示资源不存在 +
         std::cout << "else 中 m_real_file = " << m_real_file << std::endl;
         //            else 中 m_real_file = /home/ubuntu/TinyWebServer-master/root/judge.html
+        
+
         if (stat(m_real_file, &m_file_stat) < 0)   // m_real_file 是路径名字   m_file_stat 是文件的状态
             return NO_RESOURCE;
 
@@ -637,9 +655,11 @@ void http_conn::makeNewDownloadHTML(string strDir){
             {
                     string strFileName = pDirent->d_name;
                     string strFileFullPath = strDir + "/" + strFileName;
-                    vFileFullPath.push_back(strFileFullPath);
+                    if(strFileName != "." && strFileName != ".."){
+                        vFileFullPath.push_back(strFileFullPath);
+                    }
             }
-            vFileFullPath.erase(vFileFullPath.begin(), vFileFullPath.begin() +  2);    //前两个存储的是当前路径和上一级路径，所以要删除
+            // vFileFullPath.erase(vFileFullPath.begin(), vFileFullPath.begin() +  2);    //前两个存储的是当前路径和上一级路径，所以要删除
     }else
         std::cout << "strDir文件不存在" << std::endl;
 
