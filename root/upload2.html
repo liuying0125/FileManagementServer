@@ -25,16 +25,16 @@
                 var file1 = document.getElementById("file-uploader").files[0];
                 var fileName = file1.name
                
-                var file2 = new Blob([file1],{type : 'image/jpg'})
+               // var file2 = new Blob([file1],{type : 'image/jpg'})
                
                 var formData = new FormData();
-                formData.append('file', file1);
+                formData.append('file', file1);  // 二进制文件流
                // formData.append('filename', fileName);
                             $.ajax({
                                 contentType:false,
                                 processData: false,
                                 type: "POST",
-                                url: "/upload",
+                                url: "/funcupload",
                                 cache: false,
                                 data : formData,
                             

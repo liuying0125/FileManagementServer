@@ -441,7 +441,7 @@ void WebServer::eventLoop()
                     else if ((sockfd == m_pipefd[0]) && (events[i].events & EPOLLIN))
                     {
                             //没有接入 number = 1 的时候
-                            std::cout << "执行 ((sockfd == m_pipefd[0]) && (events[i].events & EPOLLIN)) " << std::endl;
+                       //     std::cout << "执行 ((sockfd == m_pipefd[0]) && (events[i].events & EPOLLIN)) " << std::endl;
                             bool flag = dealwithsignal(timeout, stop_server);  //读取信号
                             if (false == flag)
                                     LOG_ERROR("%s", "dealclientdata failure");
@@ -456,7 +456,7 @@ void WebServer::eventLoop()
                     //当这一sockfd上有可写事件时，epoll_wait通知主线程。dealwithwrite往socket上写入服务器处理客户请求的结果 + 
                     else if (events[i].events & EPOLLOUT)   //对应的文件描述符可以写 +
                     {
-                            std::cout << "events[i].events & EPOLLOUT" << std::endl;
+                         //   std::cout << "events[i].events & EPOLLOUT" << std::endl;
                             dealwithwrite(sockfd);
                     }
             }

@@ -41,6 +41,8 @@ public:
         //设置写缓冲区m_write_buf大小  + 
         static const int WRITE_BUFFER_SIZE = 1024;
 
+     
+
 //报文的请求方法，本项目只用到GET和POST + 
 enum METHOD
 {
@@ -122,8 +124,11 @@ private:
         HTTP_CODE parse_content(char *text);
         HTTP_CODE do_request();
 
+        // 下载 功能
         void makeNewDownloadHTML(string);
 
+        //上传
+        bool makeupload();
 
         //m_start_line是已经解析的字符 +
         //get_line用于将指针向后偏移，指向未处理的字符  +
@@ -153,6 +158,9 @@ public:
         int m_state;  //读为0, 写为1
 
 private:
+        char fileName[100]; //上传文件时候的新名字
+        char newFileData[1024*10]; //上传文件时候的数据
+        
         int m_sockfd;
         sockaddr_in m_address;
         //存储读取的请求报文数据

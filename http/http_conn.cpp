@@ -157,6 +157,9 @@ void http_conn::init()
         memset(m_read_buf, '\0', READ_BUFFER_SIZE);
         memset(m_write_buf, '\0', WRITE_BUFFER_SIZE);
         memset(m_real_file, '\0', FILENAME_LEN);
+
+        memset(fileName, '\0', 100);  //上传文件时候的新名字
+        memset(newFileData, '\0', 1024*10);  //上传文件时候的数据
 }
 
 // 从状态机，用于分析出一行内容
@@ -377,7 +380,8 @@ http_conn::HTTP_CODE http_conn::parse_content(char *text)
             
             //POST请求中最后为输入的用户名和密码
             m_string = text;
-            cout << "m_string = " << m_string << endl;  // +
+            std::cout << "m_string = \n" << m_string << std::endl;  // +
+            std::cout << "------------------上传报文结束--------------------" << std::endl;
             return GET_REQUEST;
         }
         return NO_REQUEST;
@@ -396,10 +400,10 @@ http_conn::HTTP_CODE http_conn::process_read()
         while ((m_check_state == CHECK_STATE_CONTENT && line_status == LINE_OK) || ((line_status = parse_line()) == LINE_OK))
         { 
                 text = get_line(); 
-                std::cout << "text = get_line() = :" << text << std::endl; 
+              //  std::cout << "text = get_line() = :" << text << std::endl; 
                 //                  text = get_line();  =  POST /2CGISQL.cgi HTTP/1.1\r\n   正好28个字符
                 m_start_line = m_checked_idx;
-                std::cout << "m_start_line = :" << m_start_line << std::endl; 
+             //   std::cout << "m_start_line = :" << m_start_line << std::endl; 
                 LOG_INFO("%s", text);
 
                 //主状态机的三种状态转移逻辑  +
@@ -532,8 +536,20 @@ http_conn::HTTP_CODE http_conn::do_request()
     }
 
 
-    if (*(p + 1) == 'u'){
-        std::cout << "上传" << std::endl;
+    if (*(p + 1) == 'f'){
+        std::cout << "上传函数" << std::endl;
+        std::cout << "uploadFun" << std::endl;
+        //这里写上传逻辑
+        if(makeupload())
+            std::cout << "upload success" << std::endl;
+        else    
+            std::cout << "upload failed" << std::endl;
+
+        //文件上传完成， 页面再次回到 upload2.html
+        char *m_url_real = (char *)malloc(sizeof(char) * 200);
+        strcpy(m_url, "/upload2.html");
+        free(m_url_real);
+        // return FILE_REQUEST;
     }
 
     //如果请求资源为/0，表示跳转注册界面 +
@@ -609,31 +625,33 @@ http_conn::HTTP_CODE http_conn::do_request()
         //std::cout << "len = " << len << std::endl; ???? 加上没有办法显示judge界面
         strncpy(m_real_file + len, m_url, FILENAME_LEN - len - 1);  // m_url 复制到 m_real_file + len  
       
-        printf("m_url:%s\n", m_url);
-        //通过stat获取请求资源文件信息，成功则将信息更新到 m_file_stat 结构体 +
-        //失败返回NO_RESOURCE状态，表示资源不存在 +
-        std::cout << "else 中 m_real_file = " << m_real_file << std::endl;
-        //            else 中 m_real_file = /home/ubuntu/TinyWebServer-master/root/judge.html
-        
 
-        if (stat(m_real_file, &m_file_stat) < 0)   // m_real_file 是路径名字   m_file_stat 是文件的状态
-            return NO_RESOURCE;
 
-        //判断文件的权限，是否可读，不可读则返回FORBIDDEN_REQUEST状态 +
-        if (!(m_file_stat.st_mode & S_IROTH))
-            return FORBIDDEN_REQUEST;
+    printf("m_url:%s\n", m_url);
+    //通过stat获取请求资源文件信息，成功则将信息更新到 m_file_stat 结构体 +
+    //失败返回NO_RESOURCE状态，表示资源不存在 +
+    std::cout << "else 中 m_real_file = " << m_real_file << std::endl;
+    //            else 中 m_real_file = /home/ubuntu/TinyWebServer-master/root/judge.html
+    
 
-        //判断文件类型，如果是目录，则返回BAD_REQUEST，表示请求报文有误 +
-        if (S_ISDIR(m_file_stat.st_mode))
-            return BAD_REQUEST;
+    if (stat(m_real_file, &m_file_stat) < 0)   // m_real_file 是路径名字   m_file_stat 是文件的状态
+        return NO_RESOURCE;
 
-        std::cout << "m_real_file = :" << m_real_file << std::endl;
-        std::cout << "open对应的 m_real_file 文件到 fd 中" << std::endl;
-        int fd = open(m_real_file, O_RDONLY);
-        //使用mmap将其映射到内存地址 m_file_address 处，并告诉调用者获取文件成功 +
-        m_file_address = (char *)mmap(0, m_file_stat.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
-        close(fd);
-        return FILE_REQUEST;
+    //判断文件的权限，是否可读，不可读则返回FORBIDDEN_REQUEST状态 +
+    if (!(m_file_stat.st_mode & S_IROTH))
+        return FORBIDDEN_REQUEST;
+
+    //判断文件类型，如果是目录，则返回BAD_REQUEST，表示请求报文有误 +
+    if (S_ISDIR(m_file_stat.st_mode))
+        return BAD_REQUEST;
+
+    //std::cout << "m_real_file = :" << m_real_file << std::endl;
+    //std::cout << "open对应的 m_real_file 文件到 fd 中" << std::endl;
+    int fd = open(m_real_file, O_RDONLY);
+    //使用mmap将其映射到内存地址 m_file_address 处，并告诉调用者获取文件成功 +
+    m_file_address = (char *)mmap(0, m_file_stat.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
+    close(fd);
+    return FILE_REQUEST;
 }
 
 
@@ -659,7 +677,6 @@ void http_conn::makeNewDownloadHTML(string strDir){
                         vFileFullPath.push_back(strFileFullPath);
                     }
             }
-            // vFileFullPath.erase(vFileFullPath.begin(), vFileFullPath.begin() +  2);    //前两个存储的是当前路径和上一级路径，所以要删除
     }else
         std::cout << "strDir文件不存在" << std::endl;
 
@@ -695,6 +712,8 @@ void http_conn::makeNewDownloadHTML(string strDir){
 
     char HTMLexample[sizeHTMLexample];
     read(fdexample,HTMLexample,sizeof(HTMLexample));  //读取示例文件到 HTMLexample字符
+    close(fdexample);
+
     write(fd,HTMLexample,sizeof(HTMLexample));   //写入示例文件
 
     //设置偏移
@@ -727,10 +746,110 @@ void http_conn::makeNewDownloadHTML(string strDir){
     // int n = write(fd,writeBuf,strlen(writeBuf));
     // printf("写入了%d个字节\n",n);
     // printf("偏移了%d个字节\n",ret);
-
     close(fd);
 
 }
+
+// 上传功能
+/* 上传报文
+-------------------------------------------------------------------
+------WebKitFormBoundarylBZrGNdZ8OoGoKtw
+Content-Disposition: form-data; name="file"; filename="test.txt"
+Content-Type: text/plain
+
+123
+------WebKitFormBoundarylBZrGNdZ8OoGoKtw--
+
+-------------------------------------------------------------------
+*/
+bool http_conn::makeupload(){
+    //m_string =      // char*类型
+    std::cout << "makeupload函数中" << std::endl;
+    if(m_string == nullptr || m_string[0] != '-'){
+        return false;
+    }
+    std::cout << m_string[96] << std::endl;
+    
+    int index = 97;   //对的呀
+   //char *filename = (char *)malloc(sizeof(char) * 100);  // 读取报文中的文件名字
+    char rootDir[] = "./root/Downloadroot/";
+    int i = 0;
+    for(int i = index ; m_string[i] != '"'; ++i){
+
+        fileName[i-index] = m_string[i];
+       
+    }
+    fileName[i-index+1] = '\0';  
+    
+    std::cout << "fileName = " << fileName << std::endl;
+    char newFilename[100];
+    char* pnewFilename = newFilename;
+    pnewFilename = strcat(rootDir,fileName);
+    std::cout << "pnewFilename = " << pnewFilename << std::endl;
+    memset(fileName, '\0', 100);
+
+    
+
+    std::cout << "开始上传文件" << std::endl;
+    //char* newFileMessage = (char*)malloc(sizeof(char)*1024*10);
+    int enterNums = 0;
+    int enterNumsIndex = 0;
+    int _nums = 0;
+    // 开始 拷贝 客户端中的数据
+    for(int i = 96 ; _nums != 2; ++i){
+        if(m_string[i] == '-'){
+            _nums++;
+        }
+        if(m_string[i] == '\r'/* && m_string[i+1] == '\n'*/){
+           // std::cout << "//r sdw " << std::endl;
+            //std::cout << "i = " << i << std::endl;
+            enterNums++;
+        }
+        std::cout << "enterNums = " << enterNums << std::endl;
+        if(enterNums == 3){ 
+            enterNumsIndex = i + 2;
+            break;
+        }
+    }
+    enterNums = 0;
+    std::cout << "enterNumsIndex = " << enterNumsIndex << std::endl;
+    // 开始读取数据
+    int j = 0;
+    for(j = enterNumsIndex ; m_string[j] != '\r'&& m_string[j+1] != '\n'; j++){
+        newFileData[j-enterNumsIndex] = m_string[j];
+       
+    } 
+    newFileData[j-enterNumsIndex+1] = '\0';
+    std::cout << "j-enterNumsIndex+1 = " << j-enterNumsIndex+1 << std::endl;
+    std::cout << "newFileData = " << newFileData << std::endl;
+
+    int newfd = open(pnewFilename,O_RDWR|O_CREAT,0666);
+    if(newfd == -1){
+        perror("创建文件失败");
+        _exit(-1);
+    }
+
+    //  char *newFilenameString = (char*)newFileData.c_str();
+    // char *p = (char*)vF.c_str();
+    //     write(fd, br, strlen(br));
+    
+
+     write(newfd,newFileData,strlen(newFileData));
+   
+   // free(newFileMessage);
+    close(newfd);
+
+    memset(newFileData, '\0', 1024*10);
+    //读出文件名字
+    return true;
+    //在Downloadroot文件夹下创建文件
+
+    //将string中报文信息写入 file文件
+
+    //关闭文件
+
+}
+ 
 
 
 void http_conn::unmap()
